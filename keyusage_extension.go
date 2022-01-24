@@ -4,7 +4,7 @@
 
 // Package x509tools provides various x509 related helper functions that are
 // not found in the standard library.
-
+//
 package x509tools // import "toolman.org/crypto/x509tools"
 
 import (
