@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// KeyUsageString returns a string representation of the provided KeyUsage
+// value. For KeyUsage values with multiple bit set, the resultant string will
+// contain a pipe-separated list of strings.
 func KeyUsageString(ku x509.KeyUsage) string {
 	var out []string
 
