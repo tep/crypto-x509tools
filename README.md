@@ -1,6 +1,8 @@
 
 # x509tools [![License][license-img]][license] [![GoDoc][godoc-img]][godoc] [![Go Report Card][reportcard-img]][reportcard]
 
+`import "toolman.org/crypto/x509tools"`
+
 This package contains several x509-related helper functions not found in the
 standard library (albeit, perhaps they should be).
 
