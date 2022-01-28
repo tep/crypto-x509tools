@@ -51,7 +51,7 @@ func (s SKID) Equal(o SKID) bool {
 	}
 }
 
-// String returns the colon-separated, hexadecimal representating of the
+// String returns the colon-separated, hexadecimal representation of the
 // receiver -- similar to the following:
 //
 // 		"67:ED:5B:3B:3B:82:BE:2C:2C:60:E5:ED:5B:39:5F:19:BC:BB:E7:B8"
