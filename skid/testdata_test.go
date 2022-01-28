@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,25 +39,25 @@ type testdata struct {
 }
 
 func loadTestdata() ([]testdata, error) {
-	files, err := os.ReadDir(testdataDir)
+	entries, err := os.ReadDir(testdataDir)
 	if err != nil {
 		return nil, err
 	}
 
 	var out []testdata
 
-	for _, dent := range files {
-		if !dent.Type().IsRegular() {
+	for _, entry := range entries {
+		var (
+			name string
+			err  error
+			td   testdata
+		)
+
+		if name = checkFile(entry); name == "" {
 			continue
 		}
 
-		name := dent.Name()
-		if filepath.Ext(name) != ".yaml" {
-			continue
-		}
-
-		td, err := parseTestdataFile(filepath.Join(testdataDir, name))
-		if err != nil {
+		if td, err = parseTestdataFile(name); err != nil {
 			return nil, fmt.Errorf("parsing file %q: %w", name, err)
 		}
 
@@ -64,6 +65,19 @@ func loadTestdata() ([]testdata, error) {
 	}
 
 	return out, nil
+}
+
+func checkFile(entry fs.DirEntry) string {
+	if !entry.Type().IsRegular() {
+		return ""
+	}
+
+	name := entry.Name()
+	if filepath.Ext(name) != ".yaml" {
+		return ""
+	}
+
+	return filepath.Join(testdataDir, name)
 }
 
 func parseTestdataFile(filename string) (testdata, error) {
@@ -80,16 +94,21 @@ func parseTestdataFile(filename string) (testdata, error) {
 
 	td.name = strings.TrimSuffix(filepath.Base(filename), ".yaml")
 
-	if td.pubkey, err = parsePublicKey(td.PubKey); err != nil {
-		return td, err
-	}
+	for _, text := range []string{td.PubKey, td.CSR, td.Cert} {
+		switch text {
+		case td.PubKey:
+			td.pubkey, err = parsePublicKey(td.PubKey)
 
-	if td.req, err = parseCertRequest(td.CSR); err != nil {
-		return td, err
-	}
+		case td.CSR:
+			td.req, err = parseCertRequest(td.CSR)
 
-	if td.cert, err = parseCertificate(td.Cert); err != nil {
-		return td, err
+		case td.Cert:
+			td.cert, err = parseCertificate(td.Cert)
+		}
+
+		if err != nil {
+			return td, err
+		}
 	}
 
 	return td, nil
